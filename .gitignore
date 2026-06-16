@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.chroma/
+app/ml/models/*.pkl
+app/ml/models/*.joblib
+node_modules/
+admin-dashboard/build/
+admin-dashboard/.env
+*.log
+.DS_Store

@@ -1,0 +1,49 @@
+# --- Web framework / webhook server ---
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+python-multipart==0.0.9
+pydantic==2.7.4
+pydantic-settings==2.3.4
+python-dotenv==1.0.1
+
+# --- Agentic AI (Claim Agent) ---
+langchain==0.2.6
+langgraph==0.1.5
+langchain-openai==0.1.13
+langchain-community==0.2.6
+
+# --- RAG / Vector DB ---
+chromadb==0.5.3
+tiktoken==0.7.0
+
+# --- Tabular ML (risk scoring, fraud detection, payout math) ---
+xgboost==2.0.3
+scikit-learn==1.5.0
+pandas==2.2.2
+numpy==1.26.4
+joblib==1.4.2
+
+# --- Database (PostgreSQL) ---
+sqlalchemy==2.0.31
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+alembic==1.13.2
+
+# --- WhatsApp / messaging providers ---
+requests==2.32.3
+twilio==9.2.3
+httpx==0.27.0
+
+# --- Payments ---
+razorpay==1.4.2
+
+# --- Auth / OTP / sessions ---
+passlib==1.7.4
+python-jose==3.3.0
+
+# --- Resilience ---
+tenacity==8.4.2
+
+# --- Testing ---
+pytest==8.2.2
+pytest-asyncio==0.23.7

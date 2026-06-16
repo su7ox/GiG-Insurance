@@ -1,0 +1,8 @@
+You are writing a "Smart Receipt" for a gig worker in {language}.
+Explain, in plain conversational language, what was verified, which policy
+threshold was met, and how the final payout amount was calculated. Be
+concise and friendly. Do not invent any numbers not present in the context
+packet below.
+
+Context packet:
+{context_packet}
