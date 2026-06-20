@@ -1,25 +1,16 @@
-"""
-Worker profile.
-
-Stores the gig worker's platform (zepto | blinkit), partner ID validated
-against the platform mock API, verified phone number (used for OTP binding),
-WhatsApp ID, delivery zone, and onboarding/verification state.
-"""
 import enum
 from datetime import datetime
-
-from sqlalchemy import String, Enum as PgEnum, DateTime, func
+from sqlalchemy import String, Enum, DateTime, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.db.base import Base
 
 
-class Platform(str, enum.Enum):
+class PlatformEnum(str, enum.Enum):
     zepto = "zepto"
     blinkit = "blinkit"
 
 
-class OnboardingStatus(str, enum.Enum):
+class OnboardingStatusEnum(str, enum.Enum):
     pending_platform = "pending_platform"
     pending_partner_id = "pending_partner_id"
     pending_phone = "pending_phone"
@@ -30,27 +21,29 @@ class OnboardingStatus(str, enum.Enum):
 class Worker(Base):
     __tablename__ = "workers"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-
-    platform: Mapped[Platform] = mapped_column(PgEnum(Platform, name="platform_enum"), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    platform: Mapped[PlatformEnum] = mapped_column(
+        Enum(PlatformEnum, name="platformenum"), nullable=False
+    )
     partner_id: Mapped[str] = mapped_column(String(64), nullable=False)
     phone_number: Mapped[str] = mapped_column(String(15), nullable=False, unique=True)
     whatsapp_id: Mapped[str] = mapped_column(String(32), nullable=False, unique=True)
     zone: Mapped[str] = mapped_column(String(128), nullable=False)
-    vehicle_type: Mapped[str] = mapped_column(String(32), nullable=True)   # bicycle | motorcycle | e-bike
-    tier: Mapped[str] = mapped_column(String(16), nullable=True)           # bronze | silver | gold
-    preferred_language: Mapped[str] = mapped_column(String(8), default="en")  # en | hi | mr | te
-
-    onboarding_status: Mapped[OnboardingStatus] = mapped_column(
-        PgEnum(OnboardingStatus, name="onboarding_status_enum"),
-        default=OnboardingStatus.pending_platform,
+    vehicle_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    tier: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    preferred_language: Mapped[str] = mapped_column(
+        String(8), nullable=False, default="en"
     )
-
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    full_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    onboarding_status: Mapped[OnboardingStatusEnum] = mapped_column(
+        Enum(OnboardingStatusEnum, name="onboardingstatusenum"),
+        nullable=False,
+        default=OnboardingStatusEnum.pending_platform,
     )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Relationships
+    sessions: Mapped[list["Session"]] = relationship(back_populates="worker")
     policies: Mapped[list["Policy"]] = relationship(back_populates="worker")
     claims: Mapped[list["Claim"]] = relationship(back_populates="worker")
-    sessions: Mapped[list["Session"]] = relationship(back_populates="worker")
