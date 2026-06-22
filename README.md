@@ -1,7 +1,6 @@
 # GigInsurance — AI-Powered Parametric Income Insurance for Gig Workers
 
 > **Persona:** Grocery & Q-Commerce Delivery Partners (Zepto / Blinkit)
-> **Interface:** WhatsApp — no app download required
 
 
 
