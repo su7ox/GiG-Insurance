@@ -12,29 +12,24 @@ DEFAULT_COORDS = (28.6139, 77.2090)  # New Delhi fallback
 
 
 async def resolve_zone_coords(zone: str) -> tuple[float, float]:
-    """
-    Dynamically resolve any Indian zone/area name to lat/lon
-    using Open-Meteo's free geocoding API.
-    """
     try:
-        # Append India to improve accuracy
-        query = f"{zone}, India"
+        city = zone.split()[0]
         async with httpx.AsyncClient() as client:
-            r = await client.get(
+            resp = await client.get(
                 GEOCODING_URL,
-                params={"name": query, "count": 1, "language": "en", "format": "json"},
+                params={"name": city, "count": 5, "language": "en", "format": "json"},
                 timeout=10,
             )
-            r.raise_for_status()
-            results = r.json().get("results", [])
-            if results:
-                lat = results[0]["latitude"]
-                lon = results[0]["longitude"]
+            resp.raise_for_status()
+            results = resp.json().get("results", [])
+            india = [x for x in results if x.get("country_code") == "IN"]
+            if india:
+                lat = india[0]["latitude"]
+                lon = india[0]["longitude"]
                 logger.info(f"Resolved '{zone}' → ({lat}, {lon})")
                 return lat, lon
     except Exception as e:
-        logger.warning(f"Geocoding failed for '{zone}': {e}")
-
+        logger.warning(f"Geocoding failed for '{zone}': {e}", exc_info=True)
     logger.warning(f"Using default coords for '{zone}'")
     return DEFAULT_COORDS
 
@@ -102,7 +97,7 @@ async def check_weather_api(state: ClaimState, zone: str) -> ClaimState:
         )
 
     except Exception as e:
-        logger.error(f"Weather API error: {e}")
+        logger.error(f"Weather API error: {e}", exc_info=True)
         state["weather_data"] = {"rainfall_mm": 0, "temp_c": None, "aqi": None}
         state["tool_errors"].append(f"check_weather: {str(e)}")
 

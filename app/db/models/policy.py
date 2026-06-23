@@ -3,17 +3,12 @@ from datetime import datetime, date
 from sqlalchemy import Integer, Float, DateTime, ForeignKey, Date, Enum, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
-
-
 class PolicyStatusEnum(str, enum.Enum):
     active = "active"
     expired = "expired"
     cancelled = "cancelled"
-
-
 class Policy(Base):
     __tablename__ = "policies"
-
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     worker_id: Mapped[int] = mapped_column(
         ForeignKey("workers.id", ondelete="CASCADE"), nullable=False
@@ -32,7 +27,5 @@ class Policy(Base):
         default=PolicyStatusEnum.active,
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-
-    # Relationships
     worker: Mapped["Worker"] = relationship(back_populates="policies")
     claims: Mapped[list["Claim"]] = relationship(back_populates="policy")

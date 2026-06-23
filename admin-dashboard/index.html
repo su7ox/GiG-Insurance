@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GigInsurance Admin</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar { width: 220px; background: #1a1d27; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid #2d3748; }
+    .logo { font-size: 18px; font-weight: 700; color: #7c3aed; margin-bottom: 24px; }
+    .logo span { color: #e2e8f0; }
+    .nav-btn { background: none; border: none; color: #94a3b8; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 14px; transition: all 0.2s; }
+    .nav-btn:hover { background: #2d3748; color: #e2e8f0; }
+    .nav-btn.active { background: #7c3aed22; color: #a78bfa; border-left: 3px solid #7c3aed; }
+    .main { flex: 1; padding: 32px; overflow-y: auto; }
+    .page-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .page-sub { color: #64748b; font-size: 14px; margin-bottom: 32px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-card { background: #1a1d27; border: 1px solid #2d3748; border-radius: 12px; padding: 20px; }
+    .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 700; }
+    .stat-value.green { color: #10b981; }
+    .stat-value.red { color: #ef4444; }
+    .stat-value.yellow { color: #f59e0b; }
+    .stat-value.purple { color: #a78bfa; }
+    .card { background: #1a1d27; border: 1px solid #2d3748; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+    .card-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #e2e8f0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 12px; color: #64748b; border-bottom: 1px solid #2d3748; font-weight: 500; }
+    td { padding: 12px; border-bottom: 1px solid #1e2435; }
+    tr:hover td { background: #1e2435; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge.approved { background: #10b98122; color: #10b981; }
+    .badge.denied { background: #ef444422; color: #ef4444; }
+    .badge.manual_review { background: #f59e0b22; color: #f59e0b; }
+    .badge.pending { background: #64748b22; color: #64748b; }
+    .loss-ratio-bar { height: 12px; background: #2d3748; border-radius: 6px; overflow: hidden; margin: 12px 0; }
+    .loss-ratio-fill { height: 100%; border-radius: 6px; transition: width 0.5s; }
+    .refresh-btn { background: #7c3aed; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; float: right; }
+    .empty { color: #64748b; text-align: center; padding: 40px; }
+    .loading { color: #64748b; text-align: center; padding: 40px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const API = 'http://localhost:8000/admin';
+
+function useFetch(url) {
+  const [data, setData] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const load = () => {
+    setLoading(true);
+    fetch(url).then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
+  };
+  React.useEffect(() => { load(); }, [url]);
+  return { data, loading, reload: load };
+}
+
+function StatCard({ label, value, cls }) {
+  return (
+    <div className="stat-card">
+      <div className="stat-label">{label}</div>
+      <div className={`stat-value ${cls}`}>{value}</div>
+    </div>
+  );
+}
+
+function Overview() {
+  const { data, loading, reload } = useFetch(`${API}/stats`);
+  const lr = useFetch(`${API}/loss-ratio`);
+  if (loading) return <div className="loading">Loading...</div>;
+  const lrPct = lr.data ? Math.min(lr.data.loss_ratio * 100, 100) : 0;
+  const lrColor = lrPct > 80 ? '#ef4444' : lrPct > 50 ? '#f59e0b' : '#10b981';
+  return (
+    <div>
+      <button className="refresh-btn" onClick={() => { reload(); lr.reload(); }}>↻ Refresh</button>
+      <div className="page-title">Overview</div>
+      <div className="page-sub">Real-time platform health</div>
+      <div className="stats-grid">
+        <StatCard label="Total Claims" value={data?.total_claims ?? 0} cls="purple" />
+        <StatCard label="Approved" value={data?.approved ?? 0} cls="green" />
+        <StatCard label="Denied" value={data?.denied ?? 0} cls="red" />
+        <StatCard label="Manual Review" value={data?.manual_review ?? 0} cls="yellow" />
+        <StatCard label="Total Workers" value={data?.total_workers ?? 0} cls="purple" />
+        <StatCard label="Payouts (₹)" value={`₹${(data?.total_payout_inr ?? 0).toFixed(0)}`} cls="green" />
+      </div>
+      <div className="card">
+        <div className="card-title">Loss Ratio</div>
+        {lr.data && <>
+          <div style={{display:'flex',justifyContent:'space-between',fontSize:13,color:'#94a3b8'}}>
+            <span>Premiums Collected: ₹{lr.data.total_premium_collected.toFixed(2)}</span>
+            <span>Payouts: ₹{lr.data.total_payout_disbursed.toFixed(2)}</span>
+            <span style={{color: lrColor, fontWeight:700}}>{(lr.data.loss_ratio * 100).toFixed(1)}%</span>
+          </div>
+          <div className="loss-ratio-bar">
+            <div className="loss-ratio-fill" style={{width:`${lrPct}%`, background: lrColor}} />
+          </div>
+          <div style={{fontSize:12,color:'#64748b'}}>
+            {lrPct < 50 ? '✅ Healthy — payouts well within premium collection' :
+             lrPct < 80 ? '⚠️ Moderate — monitor claim frequency' :
+             '🚨 High — review claim thresholds'}
+          </div>
+        </>}
+      </div>
+    </div>
+  );
+}
+
+function Claims() {
+  const { data, loading, reload } = useFetch(`${API}/claims`);
+  if (loading) return <div className="loading">Loading...</div>;
+  return (
+    <div>
+      <button className="refresh-btn" onClick={reload}>↻ Refresh</button>
+      <div className="page-title">All Claims</div>
+      <div className="page-sub">Last 50 claims processed by the agent</div>
+      <div className="card">
+        {!data?.length ? <div className="empty">No claims yet</div> :
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Worker</th><th>Disruption</th><th>Decision</th><th>Reason</th><th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map(c => (
+              <tr key={c.id}>
+                <td>#{c.id}</td>
+                <td>{c.worker_id}</td>
+                <td>{c.disruption_type.replace(/_/g,' ')}</td>
+                <td><span className={`badge ${c.decision}`}>{c.decision}</span></td>
+                <td style={{maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:'#94a3b8'}}>{c.decision_reason}</td>
+                <td style={{color:'#64748b'}}>{c.created_at ? new Date(c.created_at).toLocaleString() : '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>}
+      </div>
+    </div>
+  );
+}
+
+function ManualReview() {
+  const { data, loading, reload } = useFetch(`${API}/manual-review`);
+  if (loading) return <div className="loading">Loading...</div>;
+  return (
+    <div>
+      <button className="refresh-btn" onClick={reload}>↻ Refresh</button>
+      <div className="page-title">Manual Review Queue</div>
+      <div className="page-sub">Claims flagged for human review</div>
+      {!data?.length ? <div className="card"><div className="empty">✅ No claims pending review</div></div> :
+      data.map(c => (
+        <div className="card" key={c.id}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+            <span style={{fontWeight:600}}>Claim #{c.id} — Worker {c.worker_id}</span>
+            <span className="badge manual_review">Manual Review</span>
+          </div>
+          <div style={{fontSize:13,color:'#94a3b8',marginBottom:8}}>
+            <strong>Message:</strong> {c.raw_message}
+          </div>
+          <div style={{fontSize:13,color:'#94a3b8',marginBottom:8}}>
+            <strong>Disruption:</strong> {c.disruption_type.replace(/_/g,' ')} &nbsp;|&nbsp;
+            <strong>Anomaly Score:</strong> {c.anomaly_score ?? 'N/A'}
+          </div>
+          <div style={{fontSize:13,color:'#f59e0b'}}>
+            <strong>Reason:</strong> {c.decision_reason}
+          </div>
+          <div style={{fontSize:12,color:'#64748b',marginTop:8}}>{c.created_at ? new Date(c.created_at).toLocaleString() : ''}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Analytics() {
+  const { data } = useFetch(`${API}/claims`);
+  const disruptions = React.useMemo(() => {
+    if (!data) return [];
+    const counts = {};
+    data.forEach(c => { counts[c.disruption_type] = (counts[c.disruption_type] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({ name: name.replace(/_/g,' '), value }));
+  }, [data]);
+
+  const decisions = React.useMemo(() => {
+    if (!data) return [];
+    const counts = {};
+    data.forEach(c => { counts[c.decision] = (counts[c.decision] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [data]);
+
+  return (
+    <div>
+      <div className="page-title">Analytics</div>
+      <div className="page-sub">Disruption trends and decision breakdown</div>
+      <div className="card">
+        <div className="card-title">Disruption Types</div>
+        {!disruptions.length ? <div className="empty">No data yet</div> :
+        disruptions.map(d => (
+          <div key={d.name} style={{marginBottom:12}}>
+            <div style={{display:'flex',justifyContent:'space-between',fontSize:13,marginBottom:4}}>
+              <span>{d.name}</span><span style={{color:'#a78bfa'}}>{d.value}</span>
+            </div>
+            <div style={{height:8,background:'#2d3748',borderRadius:4}}>
+              <div style={{height:'100%',background:'#7c3aed',borderRadius:4,width:`${(d.value/data.length)*100}%`}} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="card">
+        <div className="card-title">Decision Breakdown</div>
+        {!decisions.length ? <div className="empty">No data yet</div> :
+        decisions.map(d => {
+          const colors = { approved:'#10b981', denied:'#ef4444', manual_review:'#f59e0b', pending:'#64748b' };
+          return (
+            <div key={d.name} style={{marginBottom:12}}>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:13,marginBottom:4}}>
+                <span className={`badge ${d.name}`}>{d.name}</span>
+                <span>{d.value} ({data ? ((d.value/data.length)*100).toFixed(0) : 0}%)</span>
+              </div>
+              <div style={{height:8,background:'#2d3748',borderRadius:4}}>
+                <div style={{height:'100%',background:colors[d.name]||'#7c3aed',borderRadius:4,width:`${(d.value/data.length)*100}%`}} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [page, setPage] = React.useState('overview');
+  const pages = { overview: <Overview/>, claims: <Claims/>, manual: <ManualReview/>, analytics: <Analytics/> };
+  const navs = [
+    { id:'overview', label:'📊 Overview' },
+    { id:'claims', label:'📋 All Claims' },
+    { id:'manual', label:'🔍 Review Queue' },
+    { id:'analytics', label:'📈 Analytics' },
+  ];
+  return (
+    <div className="app">
+      <div className="sidebar">
+        <div className="logo">Gig<span>Insurance</span></div>
+        {navs.map(n => (
+          <button key={n.id} className={`nav-btn ${page===n.id?'active':''}`} onClick={() => setPage(n.id)}>
+            {n.label}
+          </button>
+        ))}
+      </div>
+      <div className="main">{pages[page]}</div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     GOV_FEED_API_KEY: str
     GOV_FEED_API_BASE_URL: str = "https://newsapi.org/v2"
 
+    # ── WhatsApp provider ──────────────────────────────────────────────────
     # Set to "twilio" for sandbox/testing, "meta" after Business verification
     WHATSAPP_PROVIDER: str = "twilio"
 

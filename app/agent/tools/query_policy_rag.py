@@ -1,8 +1,6 @@
 import logging
 from app.agent.state import ClaimState
-
 logger = logging.getLogger(__name__)
-
 POLICY_RULES = {
     "heavy_rain": {
         "threshold_mm": 50.0,
@@ -32,7 +30,6 @@ POLICY_RULES = {
     },
 }
 
-
 async def query_policy_rag(state: ClaimState) -> ClaimState:
     try:
         disruption_type = state.get("disruption_type", "unknown")
@@ -46,15 +43,11 @@ async def query_policy_rag(state: ClaimState) -> ClaimState:
         state["policy_rule"] = {**rule, "disruption_type": disruption_type}
         state["steps_completed"].append("query_policy_rag:fetched")
         logger.info(f"Policy rule fetched for {disruption_type}")
-
     except Exception as e:
         logger.error(f"Policy RAG error: {e}")
         state["policy_rule"] = {"matched": False}
         state["tool_errors"].append(f"query_policy_rag: {str(e)}")
-
     return state
-
-
 def evaluate_policy_threshold(state: ClaimState) -> bool:
     disruption_type = state.get("disruption_type", "unknown")
     rule = state.get("policy_rule", {})

@@ -1,8 +1,12 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import String, Enum, DateTime, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 class PlatformEnum(str, enum.Enum):
@@ -40,10 +44,18 @@ class Worker(Base):
         nullable=False,
         default=OnboardingStatusEnum.pending_platform,
     )
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=_utcnow,  # Python sets this before INSERT — never None
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=_utcnow,  # Python sets this before INSERT — never None
+        onupdate=_utcnow,  # Python sets this before UPDATE — never None
+        nullable=False,
+    )
 
-    # Relationships
     sessions: Mapped[list["Session"]] = relationship(back_populates="worker")
     policies: Mapped[list["Policy"]] = relationship(back_populates="worker")
     claims: Mapped[list["Claim"]] = relationship(back_populates="worker")

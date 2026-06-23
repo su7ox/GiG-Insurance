@@ -1,20 +1,11 @@
-"""
-WhatsApp client — provider-aware sender.
-
-Provider is selected via the WHATSAPP_PROVIDER env var:
-    twilio  → Twilio REST API  (sandbox + production)
-    meta    → Meta Graph API   (production, after Business verification)
-
-Defaults to 'twilio' so the sandbox works out of the box.
-Interactive buttons (list messages) are not supported by the Twilio
-sandbox — they are silently degraded to plain-text equivalents.
-"""
-
 import httpx
 import logging
 from app.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+# ── Internal helpers ────────────────────────────────────────────────────────
 
 
 def _provider() -> str:

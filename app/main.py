@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.api.webhook import router as webhook_router
+from app.api.admin import router as admin_router
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -24,6 +25,7 @@ app.add_middleware(
 
 # --- Routers ---
 app.include_router(webhook_router)
+app.include_router(admin_router)
 
 
 # --- Health check ---
