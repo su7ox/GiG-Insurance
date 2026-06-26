@@ -1,6 +1,9 @@
+from chromadb import db
 from fastapi import APIRouter, Request, Query, HTTPException, Depends
 from fastapi.responses import PlainTextResponse
 from app.whatsapp.message_parser import ParsedMessage
+from app.rag.policy_qa import answer_policy_question
+from app.whatsapp.session_manager import get_worker_by_whatsapp_id
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.db.session import get_db
@@ -48,7 +51,9 @@ async def receive_message(request: Request, db: AsyncSession = Depends(get_db)):
             return _twiml_response("")
 
         whatsapp_id = parsed.whatsapp_id
-        logger.info(f"Message from {whatsapp_id} | type={parsed.msg_type} | text={parsed.text}")
+        logger.info(
+            f"Message from {whatsapp_id} | type={parsed.msg_type} | text={parsed.text}"
+        )
 
         onboarded = await is_onboarding_complete(whatsapp_id, db)
 
@@ -62,12 +67,14 @@ async def receive_message(request: Request, db: AsyncSession = Depends(get_db)):
         disruption_type = await classify_disruption(message_text)
 
         if not is_claim_intent(disruption_type):
-            await _handle_general_query(whatsapp_id, disruption_type)
+            await _handle_general_query(whatsapp_id, disruption_type, message_text, db)
             return _twiml_response("")
 
         # Only real disruptions reach here
         result = await handle_claim(parsed, disruption_type, db)
-        logger.info(f"Claim decision for {whatsapp_id}: {result.get('decision')} | payout=₹{result.get('final_payout')}")
+        logger.info(
+            f"Claim decision for {whatsapp_id}: {result.get('decision')} | payout=₹{result.get('final_payout')}"
+        )
         return _twiml_response("")
 
     except Exception as e:
@@ -75,7 +82,9 @@ async def receive_message(request: Request, db: AsyncSession = Depends(get_db)):
         return _twiml_response("")
 
 
-async def handle_claim(parsed: ParsedMessage, disruption_type: str, db: AsyncSession) -> dict:
+async def handle_claim(
+    parsed: ParsedMessage, disruption_type: str, db: AsyncSession
+) -> dict:
     """Extract claim handling from inline code into a proper function."""
     whatsapp_id = parsed.whatsapp_id
     worker = await get_worker_by_whatsapp_id(whatsapp_id, db)
@@ -113,7 +122,9 @@ async def handle_claim(parsed: ParsedMessage, disruption_type: str, db: AsyncSes
 
     worker_profile = get_worker_profile(worker.platform.value, worker.partner_id)
     worker_name = worker_profile.get("name", "Worker") if worker_profile else "Worker"
-    language = worker_profile.get("preferred_language", "en") if worker_profile else "en"
+    language = (
+        worker_profile.get("preferred_language", "en") if worker_profile else "en"
+    )
 
     receipt = await generate_smart_receipt(
         worker_name=worker_name,
@@ -130,22 +141,27 @@ async def handle_claim(parsed: ParsedMessage, disruption_type: str, db: AsyncSes
     return result
 
 
-async def _handle_general_query(whatsapp_id: str, intent: str):
-    """Handle non-claim messages without touching the claim pipeline."""
+async def _handle_general_query(
+    whatsapp_id: str, intent: str, message_text: str, db: AsyncSession
+):
+    worker = await get_worker_by_whatsapp_id(whatsapp_id, db)
+    worker_name = worker.full_name if worker and worker.full_name else "there"
+
     if intent == "unknown":
         reply = (
-            "I'm not sure I understood that. 🤔\n\n"
-            "If you're reporting a disruption, please describe what happened — "
-            "e.g. *heavy rain*, *flooding*, *curfew*, *extreme heat*, *bad AQI*."
+            f"Hi {worker_name}! I'm not sure I understood that. 🤔\n\n"
+            "If you're reporting a disruption, describe what happened:\n"
+            "e.g. *heavy rain*, *flooding*, *curfew*, *extreme heat*, *bad AQI*\n\n"
+            "Or ask me any policy question!"
         )
     else:
-        reply = (
-            "I can help with disruption claims only right now. 🙏\n\n"
-            "For account or policy changes, please contact support:\n"
-            "📧 support@giginsurance.in\n\n"
-            "To file a claim, just tell me what disrupted your work today."
+        reply = await answer_policy_question(
+            question=message_text,
+            worker_name=worker_name,
         )
+
     await send_text_message(whatsapp_id, reply)
+
 
 def _twiml_response(body: str) -> PlainTextResponse:
     if body:

@@ -1,0 +1,268 @@
+================================================================
+GIGINSURANCE — PARAMETRIC INCOME PROTECTION POLICY
+For Gig Delivery Workers | Zepto & Blinkit Partners
+Version 2.1 | Effective: April 1, 2026
+================================================================
+
+SECTION 1: ABOUT GIGINSURANCE
+----------------------------------------------------------------
+GigInsurance provides parametric income protection for delivery
+partners working on Zepto and Blinkit platforms in India.
+
+Unlike traditional insurance, GigInsurance uses real-time
+environmental and government data to automatically approve or
+deny claims — no paperwork, no waiting, no human adjudication.
+
+When a qualifying event is detected, payouts are processed
+within 24 hours directly to your registered UPI account.
+
+SECTION 2: WHO IS ELIGIBLE
+----------------------------------------------------------------
+You are eligible for GigInsurance if you:
+- Are an active delivery partner on Zepto or Blinkit
+- Have a valid Partner ID (ZPT### for Zepto, BLK### for Blinkit)
+- Have completed GigInsurance onboarding via WhatsApp
+- Have an active weekly policy (renews every 7 days)
+- Were on an active shift at the time of the disruption
+
+Waiting Period: Coverage begins 48 hours after policy activation.
+New workers must wait 48 hours before filing any claim.
+
+SECTION 3: WEEKLY PREMIUM
+----------------------------------------------------------------
+Your weekly premium is calculated based on your delivery zone's
+historical risk score:
+
+Base Premium: ₹20 per week
+
+Zone Risk Modifiers:
+- Mumbai (High flood/rain risk):    ₹20 × 1.30 = ₹26/week
+- Kolkata (High flood risk):        ₹20 × 1.28 = ₹25.60/week
+- Chennai (High cyclone/rain risk): ₹20 × 1.25 = ₹25/week
+- Delhi/NCR (Moderate AQI risk):    ₹20 × 1.20 = ₹24/week
+- Hyderabad (Moderate risk):        ₹20 × 1.18 = ₹23.60/week
+- Bangalore (Lower risk):           ₹20 × 1.15 = ₹23/week
+- Other zones:                      ₹20 × 1.20 = ₹24/week
+
+Maximum weekly premium: ₹50 (capped)
+Premium is auto-debited from your UPI account every Monday.
+
+SECTION 4: COVERAGE — QUALIFYING DISRUPTION EVENTS
+----------------------------------------------------------------
+GigInsurance covers the following six disruption types:
+
+4.1 HEAVY RAINFALL
+    Trigger:  Rainfall ≥ 50mm in any 6-hour window
+    Data:     Open-Meteo Weather API (real-time)
+    Payout:   ₹250 for partial disruption (3–6 hrs)
+              ₹500 for full-day disruption (6+ hrs)
+    Note:     Light drizzle or rainfall below 50mm does NOT qualify.
+              Rainfall between 25–50mm may qualify for ₹150 partial
+              payout if shift was active for less than 2 hours.
+
+4.2 FLOODING / WATERLOGGING
+    Trigger:  Rainfall ≥ 30mm in any 3-hour window
+    Data:     Open-Meteo Weather API (real-time)
+    Payout:   ₹300 for partial disruption
+              ₹500 for full-day disruption
+    Note:     Flood claims require rainfall confirmation. Self-reported
+              flooding without weather data confirmation will be denied.
+
+4.3 EXTREME HEAT
+    Trigger:  Temperature ≥ 45°C during active shift hours (10am–4pm)
+    Data:     Open-Meteo Weather API (real-time)
+    Payout:   ₹200 per qualifying day
+    Note:     Heat claims are only valid between 10am and 4pm.
+              Evening heat does not qualify. Temperature must be
+              recorded at your delivery zone, not nearest city.
+
+4.4 SEVERE AIR QUALITY (AQI)
+    Trigger:  European AQI ≥ 300 (Hazardous) during shift hours
+    Data:     Open-Meteo Air Quality API (real-time)
+    Payout:   ₹250 per qualifying day
+    Note:     AQI between 200–299 (Very Poor) does NOT qualify.
+              Only Hazardous (300+) AQI levels trigger a payout.
+              Common in Delhi NCR during winter months (Oct–Feb).
+
+4.5 CYCLONE / SEVERE STORM
+    Trigger:  IMD-issued cyclone warning OR wind speed ≥ 60 km/h
+    Data:     Government cyclone advisory / IMD alerts
+    Payout:   ₹500 automatic payout (no weather check required)
+    Note:     Cyclone warnings are auto-approved. No manual review.
+              Payout is issued immediately upon claim submission
+              during an active cyclone warning period.
+
+4.6 CURFEW / SECTION 144
+    Trigger:  Government-issued curfew or Section 144 in your zone
+    Data:     Government news feeds and official announcements
+    Payout:   ₹400 per qualifying day
+    Note:     Curfew must be officially declared. Bandh calls by
+              political parties without government order do NOT qualify.
+              Night curfews (10pm–5am) only pay ₹150.
+
+SECTION 5: DAILY MAXIMUM PAYOUT
+----------------------------------------------------------------
+Maximum payout per day: ₹500
+Maximum payout per week: ₹2,000
+Maximum payout per policy month: ₹6,000
+
+If multiple disruption events occur on the same day (e.g., heavy
+rain + flooding), only the higher payout applies. Payouts are
+not additive for the same day.
+
+SECTION 6: HOW TO FILE A CLAIM
+----------------------------------------------------------------
+Filing a claim is simple — just message GigInsurance on WhatsApp:
+
+Step 1: Send a message describing what disrupted your work
+        Examples:
+        "It was raining heavily and I couldn't deliver"
+        "Cyclone warning in my area today"
+        "AQI was terrible, very bad smog"
+        "Curfew was declared in my zone"
+
+Step 2: GigInsurance automatically:
+        - Verifies your active shift status
+        - Checks real-time weather/environment data
+        - Applies your policy rules
+        - Makes a decision in under 30 seconds
+
+Step 3: You receive a decision message with:
+        - Claim ID (e.g., CLM-2026-00142)
+        - Decision: Approved or Denied
+        - Payout amount (if approved)
+        - Reason for decision
+
+Step 4: If approved, payout credited to your UPI within 24 hours
+
+SECTION 7: CLAIM DENIAL REASONS
+----------------------------------------------------------------
+Common reasons claims are denied:
+
+1. INSUFFICIENT WEATHER DATA
+   The weather API showed conditions below the trigger threshold.
+   Example: You reported heavy rain but API showed only 12mm rainfall.
+   Solution: File again during or immediately after the event.
+
+2. SHIFT NOT ACTIVE
+   Our records show you were not on an active delivery shift.
+   Solution: Ensure your shift status is updated in your platform app.
+
+3. WAITING PERIOD
+   Your policy was activated less than 48 hours ago.
+   Solution: Wait 48 hours after activation before filing claims.
+
+4. DUPLICATE CLAIM
+   A claim was already filed for the same date and event.
+   Solution: Only one claim per disruption event per day.
+
+5. POLICY EXPIRED
+   Your weekly policy has expired and was not renewed.
+   Solution: Premium payment failed — check your UPI and retry.
+
+6. EVENT NOT COVERED
+   The disruption type is not covered under your policy.
+   Example: Vehicle breakdown, personal illness, traffic jams.
+   Solution: These events are outside GigInsurance coverage scope.
+
+SECTION 8: WHAT IS NOT COVERED (EXCLUSIONS)
+----------------------------------------------------------------
+GigInsurance does NOT cover:
+- Vehicle breakdown or punctures
+- Personal illness or injury
+- Traffic jams or road congestion (without government restriction)
+- Platform app downtime or technical issues
+- Low order availability
+- Personal disputes with customers
+- Voluntary non-delivery
+- Events occurring outside active shift hours
+- Events in zones outside your registered delivery zone
+
+SECTION 9: PAYOUT PROCESS
+----------------------------------------------------------------
+Approved payouts are processed as follows:
+- Approval notification: Immediate (within 30 seconds of claim)
+- UPI credit: Within 24 hours of approval
+- Bank transfer (if UPI fails): 3–5 business days
+
+UPI ID is collected during onboarding. To update your UPI,
+contact support at support@giginsurance.in
+
+SECTION 10: POLICY RENEWAL
+----------------------------------------------------------------
+Your policy automatically renews every 7 days (Monday to Sunday).
+Premium is auto-debited every Monday at 9:00 AM.
+
+If premium payment fails:
+- Day 1: Payment retry + WhatsApp notification
+- Day 2: Second retry
+- Day 3: Policy suspended (claims not accepted)
+- Day 7: Policy cancelled
+
+To reactivate a suspended policy, pay the pending premium via
+the payment link sent to your WhatsApp.
+
+SECTION 11: FRAUD PREVENTION
+----------------------------------------------------------------
+GigInsurance uses automated fraud detection:
+- Multiple claims in short succession are flagged
+- Claims filed outside shift hours are denied
+- Weather data is cross-verified with multiple sources
+- Accounts with >3 fraudulent claim attempts are suspended
+
+Filing a false claim is a violation of these terms and may
+result in permanent account suspension.
+
+SECTION 12: CONTACT AND SUPPORT
+----------------------------------------------------------------
+WhatsApp: Message us directly on +14155238886 (sandbox)
+Email:    support@giginsurance.in
+Hours:    9:00 AM – 6:00 PM IST, Monday to Saturday
+
+For escalations: escalations@giginsurance.in
+Response time: Within 2 business days
+
+SECTION 13: FREQUENTLY ASKED QUESTIONS
+----------------------------------------------------------------
+Q: What is parametric insurance?
+A: Parametric insurance pays automatically based on data triggers,
+   not on actual loss assessment. If rainfall exceeds 50mm, you get
+   paid — no proof of lost income needed.
+
+Q: How quickly do I get paid after approval?
+A: Payout is credited to your UPI within 24 hours of approval.
+
+Q: Can I file a claim for yesterday's rain?
+A: Yes, but only within 24 hours of the event. Claims filed more
+   than 24 hours after the event cannot be verified with real-time
+   data and will be denied.
+
+Q: What if my area had rain but the threshold wasn't met?
+A: Unfortunately, parametric insurance pays only when data thresholds
+   are met. 40mm of rainfall does not qualify for the 50mm threshold.
+   This is clearly stated in your policy.
+
+Q: Can I change my coverage amount?
+A: Coverage amounts are standardized and cannot be customized in the
+   current version. Premium tiers with higher coverage (₹750/day,
+   ₹1000/day) are coming in Q3 2026.
+
+Q: What if I deliver in multiple zones?
+A: Claims are verified against your registered primary zone.
+   Contact support to update your zone.
+
+Q: Is GigInsurance IRDAI regulated?
+A: GigInsurance operates as a parametric protection product under
+   the microinsurance framework. Full IRDAI licensing is in process.
+
+Q: My OTP expired, how do I get a new one?
+A: Type "restart" in WhatsApp to begin onboarding again.
+
+Q: How do I check my current policy status?
+A: Type "policy" or "my policy" in WhatsApp to see your coverage
+   details, validity, and premium amount.
+
+Q: Can I pause my policy during vacation?
+A: Policy pausing is not available currently. Contact support for
+   manual suspension to avoid premium charges.
+================================================================
