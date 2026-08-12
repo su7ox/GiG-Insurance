@@ -277,20 +277,6 @@ Final Payout = min(Adjusted Rate × Effective Hours, ₹500)
 
 ---
 
-## 📱 Interface Choice — Why WhatsApp
-
-**We replaced the dedicated mobile app entirely with a WhatsApp Bot** for the following reasons:
-
-- **Zero install friction** — gig workers already have WhatsApp. No app store, no permissions, no onboarding drop-off.
-- **Native voice input** — WhatsApp handles voice notes natively in Hindi, Marathi, and Telugu. No custom speech-to-text UI needed.
-- **Native multilingual input** — workers type in their own language and WhatsApp handles it. No custom i18n components required.
-- **Native notifications** — WhatsApp messages replace custom push notification infrastructure entirely.
-- **Session security built-in** — deleting or clearing the chat thread functions as an automatic logout. On return, the backend resets the worker's session state and requires phone number + OTP re-verification before granting access again.
-- **Dashboard replaced by conversation** — instead of charts, workers ask *"What is my active policy?"* or *"Show my claim history"* and receive a clean text summary instantly.
-
-> **Admin / Insurer Dashboard** remains a separate web interface for analytics, loss ratios, and manual review queues — this is ops-facing, not worker-facing.
-
----
 
 ##  Development Plan
 
