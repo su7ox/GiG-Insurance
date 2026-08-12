@@ -3,6 +3,7 @@ from app.agent.classifier import classify_disruption
 from app.agent.graph import (
     node_verify_shift,
     node_query_policy,
+    node_predict_risk,
     node_make_decision,
     node_flag_review,
     node_calculate_payout,
@@ -70,7 +71,8 @@ async def main():
 
     # 5. Use the existing policy tool
     state = await node_query_policy(state)
-
+    state = await node_predict_risk(state)
+    print(f"XGBoost risk score: {state['anomaly_score']}")
     # 6. Make the actual decision
     state = await node_make_decision(state)
 

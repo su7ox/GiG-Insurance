@@ -1,4 +1,5 @@
 import logging
+from langgraph import graph
 from langgraph.graph import StateGraph, END
 from app.agent.state import ClaimState
 from app.agent.tools.verify_shift import verify_active_shift
@@ -8,6 +9,7 @@ from app.agent.tools.query_policy_rag import query_policy_rag, evaluate_policy_t
 from app.agent.tools.calculate_payout import calculate_payout
 from app.agent.tools.flag_manual_review import flag_for_manual_review
 from app.integrations.platform_api.mock_client import get_worker_profile
+from app.agent.tools.predict_risk import predict_claim_risk
 
 logger = logging.getLogger(__name__)
 
@@ -33,23 +35,47 @@ async def node_query_policy(state: ClaimState) -> ClaimState:
 
 
 async def node_calculate_payout(state: ClaimState) -> ClaimState:
-    worker = get_worker_profile(state["platform"], state["partner_id"])
-    risk_score = worker.get("risk_score", 0.5) if worker else 0.5
-    weekly_premium = worker.get("weekly_premium", 80.0) if worker else 80.0
-    return await calculate_payout(state, risk_score, weekly_premium)
+    worker = get_worker_profile(
+        state["platform"],
+        state["partner_id"]
+    )
 
+    weekly_premium = (
+        worker.get("weekly_premium", 80.0)
+        if worker
+        else 80.0
+    )
+
+    risk_score = state.get("anomaly_score")
+
+    if risk_score is None:
+        state["decision"] = "manual_review"
+        state["decision_reason"] = (
+            "XGBoost risk prediction was unavailable."
+        )
+        return state
+
+    return await calculate_payout(
+        state,
+        risk_score,
+        weekly_premium
+    )
 
 async def node_make_decision(state: ClaimState) -> ClaimState:
     try:
         if not state.get("shift_verified"):
             state["decision"] = "denied"
-            state["decision_reason"] = "Worker was not on an active shift during the claimed window."
+            state["decision_reason"] = (
+                "Worker was not on an active shift during the claimed window."
+            )
             return state
 
         threshold_met = evaluate_policy_threshold(state)
         if not threshold_met:
             state["decision"] = "denied"
-            state["decision_reason"] = "Disruption data did not meet the policy threshold for payout."
+            state["decision_reason"] = (
+                "Disruption data did not meet the policy threshold for payout."
+            )
             return state
 
         state["decision"] = "approved"
@@ -77,6 +103,14 @@ def route_by_disruption(state: ClaimState) -> str:
         return "make_decision"
 
 
+async def node_predict_risk(state: ClaimState) -> ClaimState:
+    worker = get_worker_profile(state["platform"], state["partner_id"])
+
+    historical_risk = worker.get("risk_score", 0.5) if worker else 0.5
+
+    return await predict_claim_risk(state, historical_risk)
+
+
 def build_claim_graph():
     graph = StateGraph(ClaimState)
 
@@ -84,6 +118,7 @@ def build_claim_graph():
     graph.add_node("check_weather", node_check_weather)
     graph.add_node("check_gov_feed", node_check_gov_feed)
     graph.add_node("query_policy", node_query_policy)
+    graph.add_node("predict_risk", node_predict_risk)
     graph.add_node("calculate_payout", node_calculate_payout)
     graph.add_node("make_decision", node_make_decision)
     graph.add_node("flag_review", node_flag_review)
@@ -94,13 +129,16 @@ def build_claim_graph():
 
     graph.add_edge("check_weather", "query_policy")
     graph.add_edge("check_gov_feed", "query_policy")
-    graph.add_edge("query_policy", "make_decision")
+
+    graph.add_edge("query_policy", "predict_risk")
+    graph.add_edge("predict_risk", "make_decision")
+
     graph.add_edge("make_decision", "flag_review")
 
     graph.add_conditional_edges(
         "flag_review",
-        lambda s: "calculate_payout" if s.get("decision") == "approved" else "end",
-        {"calculate_payout": "calculate_payout", "end": END}
+        lambda s: ("calculate_payout" if s.get("decision") == "approved" else "end"),
+        {"calculate_payout": "calculate_payout", "end": END},
     )
 
     graph.add_edge("calculate_payout", END)
