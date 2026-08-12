@@ -204,7 +204,7 @@ def ingest():
         c = d["metadata"]["category"]
         cats[c] = cats.get(c, 0) + 1
 
-    print(f"\n✅ Ingested {len(docs)} chunks into ChromaDB collection '{COLLECTION}'")
+    print(f"\nIngested {len(docs)} chunks into ChromaDB collection '{COLLECTION}'")
     print("\nBreakdown by category:")
     for cat, count in sorted(cats.items()):
         print(f"  {cat:<20} {count} chunk(s)")

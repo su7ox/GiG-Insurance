@@ -140,12 +140,14 @@ async def handle_claim(
     await send_text_message(whatsapp_id, receipt)
     return result
 
+# Replace _handle_general_query in webhook.py with this:
 
-async def _handle_general_query(
-    whatsapp_id: str, intent: str, message_text: str, db: AsyncSession
-):
+async def _handle_general_query(whatsapp_id: str, intent: str, message_text: str, db: AsyncSession):
     worker = await get_worker_by_whatsapp_id(whatsapp_id, db)
     worker_name = worker.full_name if worker and worker.full_name else "there"
+
+    # Get stored language preference from worker record (default English)
+    preferred_language = getattr(worker, "preferred_language", "en") or "en"
 
     if intent == "unknown":
         reply = (
@@ -158,11 +160,11 @@ async def _handle_general_query(
         reply = await answer_policy_question(
             question=message_text,
             worker_name=worker_name,
+            preferred_language=preferred_language,
         )
 
     await send_text_message(whatsapp_id, reply)
-
-
+    
 def _twiml_response(body: str) -> PlainTextResponse:
     if body:
         xml = f"<?xml version='1.0' encoding='UTF-8'?><Response><Message>{body}</Message></Response>"
